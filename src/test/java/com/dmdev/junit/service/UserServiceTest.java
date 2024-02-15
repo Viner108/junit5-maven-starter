@@ -63,6 +63,18 @@ public class UserServiceTest {
     }
 
     @Test
+    void throwExceptionIfUsernameOrPasswordIsNull() {
+        assertAll(
+                () -> {
+                    IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> userService.login(null, "dummy"));
+                    Assertions.assertThat(e.getMessage()).isEqualTo("Username or password is null");
+                },
+                () -> assertThrows(IllegalArgumentException.class, () -> userService.login("dummy", null))
+        );
+
+    }
+
+    @Test
     void usersConvertedToMapById() {
         userService.add(IVAN, PETR);
 
