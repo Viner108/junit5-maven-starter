@@ -8,7 +8,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class UserServiceTest {
+public class UserServiceTest {
     private UserService userService;
     @BeforeAll
      void init(){
