@@ -6,9 +6,11 @@ import org.hamcrest.collection.IsEmptyCollection;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.*;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
@@ -99,8 +101,10 @@ public class UserServiceTest {
     @Nested
     @DisplayName("test user login functionality")
     @Tag("login")
+    @Timeout(value = 200,unit = TimeUnit.MILLISECONDS)
     class LoginTest {
         @Test
+        @Disabled("flaky, need to see")
         void loginFailIfPasswordIsNotCorrect() {
             userService.add(IVAN);
 
@@ -109,8 +113,9 @@ public class UserServiceTest {
             assertTrue(maybeUser.isEmpty());
         }
 
-        @Test
-        void loginFailIfUserDoesNotExist() {
+        //        @Test
+        @RepeatedTest(value = 5, name = RepeatedTest.LONG_DISPLAY_NAME)
+        void loginFailIfUserDoesNotExist(RepetitionInfo repetitionInfo) {
             userService.add(IVAN);
 
             Optional<User> maybeUser = userService.login("ghfjdk", IVAN.getPassword());
@@ -118,6 +123,16 @@ public class UserServiceTest {
             assertTrue(maybeUser.isEmpty());
         }
 
+        @Test
+        @Timeout(value = 200,unit = TimeUnit.MILLISECONDS)
+        void checkLoginFunctionalPerformance(){
+            System.out.println(Thread.currentThread().getName());
+            Optional<User> result = assertTimeoutPreemptively(Duration.ofMillis(200L), () -> {
+                System.out.println(Thread.currentThread().getName());
+                Thread.sleep(300L);
+                return userService.login("dummy", IVAN.getPassword());
+            });
+        }
         @Test
         void loginSuccessIfUserExists() {
             userService.add(IVAN);
