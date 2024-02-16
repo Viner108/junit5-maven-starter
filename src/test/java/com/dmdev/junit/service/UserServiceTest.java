@@ -9,13 +9,17 @@ import org.junit.jupiter.api.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.*;
 
 import static org.hamcrest.collection.IsEmptyCollection.*;
 import static org.junit.jupiter.api.Assertions.*;
+
 @Tag("fast")
 @Tag("user")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -29,7 +33,7 @@ public class UserServiceTest {
 
     private UserService userService;
 
-    UserServiceTest(TestInfo testInfo){
+    UserServiceTest(TestInfo testInfo) {
         System.out.println();
     }
 
@@ -68,9 +72,6 @@ public class UserServiceTest {
     }
 
 
-
-
-
     @Test
     void usersConvertedToMapById() {
         userService.add(IVAN, PETR);
@@ -83,7 +84,6 @@ public class UserServiceTest {
                 () -> Assertions.assertThat(users).containsValues(IVAN, PETR)
         );
     }
-
 
 
     @AfterEach
@@ -99,7 +99,7 @@ public class UserServiceTest {
     @Nested
     @DisplayName("test user login functionality")
     @Tag("login")
-    class LoginTest{
+    class LoginTest {
         @Test
         void loginFailIfPasswordIsNotCorrect() {
             userService.add(IVAN);
@@ -117,6 +117,7 @@ public class UserServiceTest {
 
             assertTrue(maybeUser.isEmpty());
         }
+
         @Test
         void loginSuccessIfUserExists() {
             userService.add(IVAN);
@@ -126,6 +127,7 @@ public class UserServiceTest {
             maybeUser.ifPresent(user -> Assertions.assertThat(user).isEqualTo(IVAN));
 //        maybeUser.ifPresent(user -> assertEquals(IVAN,user));
         }
+
         @Test
         void throwExceptionIfUsernameOrPasswordIsNull() {
             assertAll(
@@ -138,5 +140,37 @@ public class UserServiceTest {
 
         }
 
+        @ParameterizedTest(name = "{arguments} test")
+//        @ArgumentsSource()
+//        @NullSource
+//        @EmptySource
+//        @NullAndEmptySource
+//        @ValueSource(strings = {
+//                "Ivan", "Petr"
+//        })
+//        @EnumSource
+        @MethodSource("com.dmdev.junit.service.UserServiceTest#getArgumentsForLoginTest")
+//        @CsvFileSource(resources = "/login-test-data.csv",delimiter = ',',numLinesToSkip = 1)
+//        @CsvSource({
+//                "Ivan,123",
+//                "Petr,111"
+//        })
+        @DisplayName("login param test")
+        void loginParameterizedTest(String username, String password, Optional<User> user) {
+            userService.add(IVAN, PETR);
+            Optional<User> maybeUser = userService.login(username, password);
+            Assertions.assertThat(maybeUser).isEqualTo(user);
+        }
+
+
+    }
+
+    static Stream<Arguments> getArgumentsForLoginTest() {
+        return Stream.of(
+                Arguments.of("Ivan", "123", Optional.of(IVAN)),
+                Arguments.of("Petr", "111", Optional.of(PETR)),
+                Arguments.of("Petr", "sdx", Optional.empty()),
+                Arguments.of("sfg", "123", Optional.empty())
+        );
     }
 }
