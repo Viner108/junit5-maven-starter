@@ -1,11 +1,12 @@
 package com.dmdev.junit.service;
 
+import com.dmdev.junit.TestBase;
 import com.dmdev.junit.dto.User;
-import com.dmdev.junit.paremresolver.UserServiceParamResolver;
-import org.hamcrest.collection.IsEmptyCollection;
+import com.dmdev.junit.extension.*;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.*;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 
-import static org.hamcrest.collection.IsEmptyCollection.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("fast")
@@ -27,9 +27,14 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.DisplayName.class)
 @ExtendWith({
-        UserServiceParamResolver.class
+        UserServiceParamResolver.class,
+        PostProcessingExtension.class,
+//        ConditionalExtension.class,
+        ThrowableExtention.class
+//        GlobalExtension.class
 })
-public class UserServiceTest {
+//@RunWith()
+public class UserServiceTest extends TestBase {
     private static final User IVAN = User.of(1, "Ivan", "123");
     private static final User PETR = User.of(2, "Petr", "111");
 
@@ -53,7 +58,10 @@ public class UserServiceTest {
     @Test
     @Order(1)
     @DisplayName("users will be empty if no user added")
-    void userEmptyIfNoUserAdded() {
+    void userEmptyIfNoUserAdded() throws IOException {
+        if(true){
+            throw new RuntimeException();
+        }
         System.out.println("Test 1: " + this);
         List<User> all = userService.getAll();
         assertTrue(all.isEmpty());
@@ -124,6 +132,7 @@ public class UserServiceTest {
         }
 
         @Test
+        @Disabled("error")
         @Timeout(value = 200,unit = TimeUnit.MILLISECONDS)
         void checkLoginFunctionalPerformance(){
             System.out.println(Thread.currentThread().getName());
